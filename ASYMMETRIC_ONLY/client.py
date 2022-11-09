@@ -1,14 +1,47 @@
+#
+#   PROJECT : Sending Secure Application Messages
+# 
+#   FILENAME : ASYMMETRIC_ONLY/client.py
+# 
+#   DESCRIPTION :
+#       Establish a connection that sends secure application messages from a client
+#       to a server using the Python programming language. This process is similar 
+#       to components that exist in many applications (e.g. secure email, SSH, ..).
+# 
+#   FUNCTIONS :
+#       generate_key_pairs()
+#       send_msg()
+#       recv_msg()
+#       main()
+# 
+#   NOTES :
+#      - ...
+# 
+#   AUTHOR(S) : Noah Arcand Da Silva    START DATE : 2022.11.08 (YYYY.MM.DD)
+#
+#   CHANGES :
+#       - Random errors occured when sending twice in a row with sockets. To
+#       mitigate this issue, each consecutive send needed to be followed with
+#       a receive from the other side.
+# 
+#   VERSION     DATE        WHO             DETAILS
+#   0.0.1a      2022.11.08  Noah            Creation of project.
+#   0.0.1b      2022.11.08  Noah            Functional version of asymmetric encryption.
+#   0.0.1c      2022.11.09  Noah            Bi-directional flow for asymmetric and symmetric encryption.
+#
+
+
 import rsa
 import socket
 import sys
 
 
 def generate_key_pair():
-    # Generate assymetric RSA key pairs of 2048-bit length.
+    # Generate asymmetric RSA key pairs of 2048-bit length.
     CLIENT_PUB_KEY, CLIENT_PRV_KEY = rsa.newkeys(2048)
 
     # Save the public key and private key to .pem file types.
-    with open("../client_public.pem", "wb") as f:
+    with open("client_public.pem", "wb") as f:
         f.write(CLIENT_PUB_KEY.save_pkcs1("PEM"))
 
     with open("client_private.pem", "wb") as f:
@@ -32,14 +65,16 @@ def send_msg(socket, msg):
 
     # NOTE: MESSAGE CONFIDENTIALITY
     # Fetch the server's public key.
-    with open("../server_public.pem", "rb") as f:
+    with open("server_public.pem", "rb") as f:
         SERVER_PUB_KEY = rsa.PublicKey.load_pkcs1(f.read())
     # Encrypt the message using the server's public key.
     encr_msg = rsa.encrypt(msg.encode("utf-8"), SERVER_PUB_KEY)
     
     # Finally, send the encrypted message to the server, along with its signed hash digest.
     socket.send(hash_digest_signature)
+    socket.recv(1024)   # Get receipt confirmation
     socket.send(encr_msg)
+    socket.recv(1024)   # Get receipt confirmation
 
     # Proof message can't be intercepted.
     print("\nIntercepting the message while in transit would look like this:")
