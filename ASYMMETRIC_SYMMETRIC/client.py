@@ -27,11 +27,11 @@
 #   VERSION     DATE        WHO             DETAILS
 #   0.0.1a      2022.11.08  Noah            Creation of project.
 #   0.0.1b      2022.11.08  Noah            Functional version of asymmetric encryption.
-#   0.0.1c      2022.11.09  Noah            Bi-directional flow for asymmetric and symmetric encryption.
+#   0.0.1c      2022.11.09  Noah            Bi-directional flow for asymmetric/symmetric encryption.
+#   0.0.1d      2022.11.09  Noah            Bi-directional flow for both encryption methods.
 #
 
 
-import cryptography
 from cryptography.fernet import Fernet
 import rsa
 import socket

@@ -27,11 +27,11 @@
 #   VERSION     DATE        WHO             DETAILS
 #   0.0.1a      2022.11.08  Noah            Creation of project.
 #   0.0.1b      2022.11.08  Noah            Functional version of asymmetric encryption.
-#   0.0.1c      2022.11.09  Noah            Bi-directional flow for asymmetric and symmetric encryption.
+#   0.0.1c      2022.11.09  Noah            Bi-directional flow for asymmetric/symmetric encryption.
+#   0.0.1d      2022.11.09  Noah            Bi-directional flow for both encryption methods.
 #
 
 
-import cryptography
 from cryptography.fernet import Fernet
 import rsa
 import socket
@@ -135,6 +135,7 @@ def recv_msg(c_socket):
     except:
         print("Unable to print out message.")
 
+
 def main():
     # Checking the command line for arguments.
     if len(sys.argv) > 1:
@@ -162,6 +163,7 @@ def main():
         # Tell the client they are connected to the server
         client_socket.send(bytes(f"Connected to server {socket.gethostname()}:{s.getsockname()[1]}.", "utf-8"))
 
+        # Client tells the server what it wants to do.
         client_request = client_socket.recv(1024).decode("utf-8")
         if client_request == 'send_msg':              # Receive and process message from client.
             recv_msg(
