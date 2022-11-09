@@ -30,3 +30,6 @@ In part 1 of the assignment, the message was encrypted by asymmetric key, using 
 • The client uses the server’s public key to encrypt the secret key.
 
 • It sends the output of last 2 steps, step 1 and 2, to the server.
+
+
+## How it works
