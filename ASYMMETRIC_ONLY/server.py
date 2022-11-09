@@ -27,7 +27,8 @@
 #   VERSION     DATE        WHO             DETAILS
 #   0.0.1a      2022.11.08  Noah            Creation of project.
 #   0.0.1b      2022.11.08  Noah            Functional version of asymmetric encryption.
-#   0.0.1c      2022.11.09  Noah            Bi-directional flow for asymmetric and symmetric encryption.
+#   0.0.1c      2022.11.09  Noah            Bi-directional flow for asymmetric/symmetric encryption.
+#   0.0.1d      2022.11.09  Noah            Bi-directional flow for both encryption methods.
 #
 
 
@@ -53,6 +54,34 @@ def generate_key_pair():
 
     # Exit the program to not run socket.
     sys.exit()
+
+
+def send_msg(c_socket, msg):
+    # NOTE: MESSAGE INTEGRITY & SENDER AUTHENTICATION    
+    # Fetch the server's private key.
+    with open("server_private.pem", "rb") as f:
+        SERVER_PRV_KEY = rsa.PrivateKey.load_pkcs1(f.read())
+    # Hash the message using the SHA256 algorithm and sign the hash digest using the client's private key.
+    hash_digest_signature = rsa.sign(msg.encode("utf-8"), SERVER_PRV_KEY, "SHA-256")
+
+    # NOTE: MESSAGE CONFIDENTIALITY
+    # Fetch the client's public key.
+    with open("client_public.pem", "rb") as f:
+        CLIENT_PUB_KEY = rsa.PublicKey.load_pkcs1(f.read())
+    # Encrypt the message using the server's public key.
+    encr_msg = rsa.encrypt(msg.encode("utf-8"), CLIENT_PUB_KEY)
+    
+    # Finally, send the encrypted message to the server, along with its signed hash digest.
+    c_socket.send(hash_digest_signature)
+    c_socket.recv(1024)   # Get receipt confirmation
+    c_socket.send(encr_msg)
+    c_socket.recv(1024)   # Get receipt confirmation
+
+    # Proof message can't be intercepted.
+    print("\nIntercepting the message while in transit would look like this:")
+    print(encr_msg)
+    print("\nIntercepting the digital signature while in transit would look like this:")
+    print(hash_digest_signature)
 
 
 def recv_msg(c_socket):
@@ -92,6 +121,7 @@ def recv_msg(c_socket):
     except:
         print("Unable to print out message.")
 
+
 def main():
     # Max size of messages (1,000,000,000)
     HEADERSIZE = 10
@@ -122,8 +152,19 @@ def main():
         # Tell the client they are connected to the server
         client_socket.send(bytes(f"Connected to server {socket.gethostname()}:8000.", "utf-8"))
 
-        # Receive and process message from client.
-        recv_msg(c_socket=client_socket)
+        # Client tells the server what it wants to do.
+        client_request = client_socket.recv(1024).decode("utf-8")
+        if client_request == 'send_msg':              # Receive and process message from client.
+            recv_msg(
+                c_socket = client_socket
+            )
+        elif client_request == 'recv_msg':
+            send_msg(
+                c_socket = client_socket,
+                msg="This is a message from the server!"
+            )
+        else:
+            print(f"Client typed in an invalid command: {client_request}")
 
         # Close the socket after last request between client and server.
         client_socket.close()
