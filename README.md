@@ -48,6 +48,12 @@ To send a message to the server, the command is as follows:
 
 `python -u client.py send_msg "message_to_send"`
 
+You are also able to generate new RSA key pair on either the client or server by issuing the `generate_key_pair` command.
+
+`python -u client.py generate_key_pair`
+
+`python -u server.py generate_key_pair`
+
 
 ## How it works
 
